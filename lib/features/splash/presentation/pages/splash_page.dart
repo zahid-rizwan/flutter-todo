@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/themes/app_colors.dart';
@@ -47,11 +48,7 @@ class _SplashPageState extends State<SplashPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Logo
-              Image.asset(
-                'assets/images/icons.png',
-                width: 120,
-                height: 120,
-              ),
+              SvgPicture.asset("assets/icons/logo_ic.svg"),
               const SizedBox(height: 24),
 
               // App name
@@ -67,10 +64,7 @@ class _SplashPageState extends State<SplashPage> {
               const SizedBox(height: 48),
 
               // Main illustration
-              Image.asset(
-                'assets/images/splash_illustration.png',
-                width: 300,
-              ),
+              SvgPicture.asset("assets/icons/rect_ic.svg"),
 
               const SizedBox(height: 48),
 
