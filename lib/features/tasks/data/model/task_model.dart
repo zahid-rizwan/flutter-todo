@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 
 import '../../domian/entities/task.dart';
 
@@ -23,17 +24,18 @@ class TaskModel extends Tasks {
   );
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
+    final subTasksData = json['sub_tasks'] as List? ?? [];
+    final subTasks = subTasksData.map((subTaskData) => SubTaskModel.fromJson(subTaskData)).toList();
+
     return TaskModel(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
       dueDate: DateTime.parse(json['due_date']),
-      teamMembers: List<String>.from(json['team_members']),
-      progress: json['progress'],
-      subTasks: (json['sub_tasks'] as List)
-          .map((subTask) => SubTaskModel.fromJson(subTask))
-          .toList(),
-      isCompleted: json['is_completed'],
+      teamMembers: List<String>.from(json['team_members'] ?? []),
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      subTasks: subTasks,
+      isCompleted: json['is_completed'] as bool? ?? false,
     );
   }
 
@@ -45,7 +47,6 @@ class TaskModel extends Tasks {
       'due_date': dueDate.toIso8601String(),
       'team_members': teamMembers,
       'progress': progress,
-      'sub_tasks': subTasks.map((subTask) => (subTask as SubTaskModel).toJson()).toList(),
       'is_completed': isCompleted,
     };
   }
@@ -77,9 +78,9 @@ class SubTaskModel extends SubTask {
 
   factory SubTaskModel.fromJson(Map<String, dynamic> json) {
     return SubTaskModel(
-      id: json['id'],
-      title: json['title'],
-      isCompleted: json['is_completed'],
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      isCompleted: json['is_completed'] as bool? ?? false,
     );
   }
 

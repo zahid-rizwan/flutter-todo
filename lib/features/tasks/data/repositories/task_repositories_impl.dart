@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
@@ -12,135 +13,151 @@ class TaskRepositoryImpl implements TaskRepository {
   final TaskRemoteDataSource remoteDataSource;
   final TaskLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
+  final SupabaseClient supabaseClient;
 
   TaskRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
     required this.networkInfo,
+    required this.supabaseClient,
   });
 
   @override
   Future<Either<Failure, List<Tasks>>> getCompletedTasks() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteTasks = await remoteDataSource.getCompletedTasks();
-        localDataSource.cacheCompletedTasks(remoteTasks);
-        return Right(remoteTasks);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      try {
-        final localTasks = await localDataSource.getCachedCompletedTasks();
-        return Right(localTasks);
-      } catch (e) {
-        return Left(CacheFailure(message: e.toString()));
-      }
+    try {
+      final response = await supabaseClient
+          .from('tasks')
+          .select('*, sub_tasks(*)')
+          .eq('is_completed', true)
+          .order('due_date', ascending: true);
+
+      final tasks = (response as List)
+          .map((taskData) => TaskModel.fromJson(taskData))
+          .toList();
+      return Right(tasks);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, List<Tasks>>> getOngoingTasks() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteTasks = await remoteDataSource.getOngoingTasks();
-        localDataSource.cacheOngoingTasks(remoteTasks);
-        return Right(remoteTasks);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      try {
-        final localTasks = await localDataSource.getCachedOngoingTasks();
-        return Right(localTasks);
-      } catch (e) {
-        return Left(CacheFailure(message: e.toString()));
-      }
+    try {
+      final response = await supabaseClient
+          .from('tasks')
+          .select('*, sub_tasks(*)')
+          .eq('is_completed', false)
+          .order('due_date', ascending: true);
+
+      final tasks = (response as List)
+          .map((taskData) => TaskModel.fromJson(taskData))
+          .toList();
+      return Right(tasks);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, Tasks>> getTaskDetails(String taskId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteTask = await remoteDataSource.getTaskDetails(taskId);
-        return Right(remoteTask);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      // We could look through cached tasks here, but for simplicity, return an error
-      return Left(CacheFailure(message: "No internet connection"));
+    try {
+      final response = await supabaseClient
+          .from('tasks')
+          .select('*, sub_tasks(*)')
+          .eq('id', taskId)
+          .single();
+
+      final task = TaskModel.fromJson(response);
+      return Right(task);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, Tasks>> addTask(Tasks task) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final taskModel = TaskModel.fromEntity(task);
-        final remoteTask = await remoteDataSource.addTask(taskModel);
+    try {
+      final taskModel = TaskModel.fromEntity(task);
+      final taskData = taskModel.toJson();
+      taskData['id'] = task.id.isEmpty ? DateTime.now().millisecondsSinceEpoch.toString() : task.id;
 
-        // Update the cache after adding a new task
-        await _updateCacheAfterModification();
+      // Insert task
+      await supabaseClient.from('tasks').insert(taskData);
 
-        return Right(remoteTask);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
+      // Insert subtasks
+      for (final subtask in taskModel.subTasks) {
+        final subtaskData = (subtask as SubTaskModel).toJson();
+        subtaskData['id'] = DateTime.now().millisecondsSinceEpoch.toString();
+        subtaskData['task_id'] = taskData['id'];
+        await supabaseClient.from('sub_tasks').insert(subtaskData);
       }
-    } else {
-      return Left(ServerFailure(message: "No internet connection"));
+
+      // Return the newly created task
+      final newTask = await getTaskDetails(taskData['id']);
+      return newTask.fold(
+            (failure) => Left(failure),
+            (task) => Right(task),
+      );
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, Tasks>> updateTask(Tasks task) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final taskModel = TaskModel.fromEntity(task);
-        final remoteTask = await remoteDataSource.updateTask(taskModel);
+    try {
+      final taskModel = TaskModel.fromEntity(task);
+      final taskData = taskModel.toJson();
 
-        // Update the cache after updating a task
-        await _updateCacheAfterModification();
+      // Update task
+      await supabaseClient
+          .from('tasks')
+          .update(taskData)
+          .eq('id', task.id);
 
-        return Right(remoteTask);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
+      // Delete existing subtasks
+      await supabaseClient
+          .from('sub_tasks')
+          .delete()
+          .eq('task_id', task.id);
+
+      // Insert updated subtasks
+      for (final subtask in taskModel.subTasks) {
+        final subtaskData = (subtask as SubTaskModel).toJson();
+        subtaskData['id'] = DateTime.now().millisecondsSinceEpoch.toString();
+        subtaskData['task_id'] = task.id;
+        await supabaseClient.from('sub_tasks').insert(subtaskData);
       }
-    } else {
-      return Left(ServerFailure(message: "No internet connection"));
+
+      // Return the updated task
+      final updatedTask = await getTaskDetails(task.id);
+      return updatedTask.fold(
+            (failure) => Left(failure),
+            (task) => Right(task),
+      );
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, void>> deleteTask(String taskId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.deleteTask(taskId);
-
-        // Update the cache after deleting a task
-        await _updateCacheAfterModification();
-
-        return const Right(null);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
-    } else {
-      return Left(ServerFailure(message: "No internet connection"));
-    }
-  }
-
-  // Helper method to update the cache after task modification (add, update, delete)
-  Future<void> _updateCacheAfterModification() async {
     try {
-      final completedTasks = await remoteDataSource.getCompletedTasks();
-      final ongoingTasks = await remoteDataSource.getOngoingTasks();
+      // Delete subtasks first
+      await supabaseClient
+          .from('sub_tasks')
+          .delete()
+          .eq('task_id', taskId);
 
-      await localDataSource.cacheCompletedTasks(completedTasks);
-      await localDataSource.cacheOngoingTasks(ongoingTasks);
+      // Delete task
+      await supabaseClient
+          .from('tasks')
+          .delete()
+          .eq('id', taskId);
+
+      return const Right(null);
     } catch (e) {
-      // Just log the error - this is a secondary operation
-      print('Error updating cache: $e');
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 }

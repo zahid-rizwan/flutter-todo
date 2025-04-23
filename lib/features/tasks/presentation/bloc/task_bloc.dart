@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:to_do_app_demo_1/features/tasks/presentation/bloc/task_event.dart';
 import 'package:to_do_app_demo_1/features/tasks/presentation/bloc/task_state.dart';
 

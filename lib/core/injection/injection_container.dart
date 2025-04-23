@@ -82,9 +82,8 @@ Future<void> init() async {
   //! Features - Tasks
   // Bloc
   sl.registerFactory(
-        () => TaskBloc(
-      getCompletedTasks: sl(),
-      getOngoingTasks: sl(),
+        () => TaskBloc(repository: sl()
+     
     ),
   );
 
@@ -110,7 +109,7 @@ Future<void> init() async {
         () => TaskRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
-      networkInfo: sl(),
+      networkInfo: sl(), supabaseClient: sl(),
     ),
   );
 
