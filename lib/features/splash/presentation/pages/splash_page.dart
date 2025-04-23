@@ -52,19 +52,12 @@ class _SplashPageState extends State<SplashPage> {
               const SizedBox(height: 24),
 
               // App name
-              const Text(
-                'DayTask',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+
 
               const SizedBox(height: 48),
 
               // Main illustration
-              SvgPicture.asset("assets/icons/rect_ic.svg"),
+              SvgPicture.asset("assets/icons/pana.svg"),
 
               const SizedBox(height: 48),
 

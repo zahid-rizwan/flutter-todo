@@ -111,6 +111,7 @@ class _SignupPageState extends State<SignupPage> {
                   // Name field
                   AppTextField(
                     label: 'Full Name',
+                    hint: "Enter your full name",
                     controller: _nameController,
                     prefixIcon: const Icon(Icons.person_outline),
                     validator: (value) {
@@ -126,6 +127,7 @@ class _SignupPageState extends State<SignupPage> {
                   // Email field
                   AppTextField(
                     label: 'Email Address',
+                    hint: "Enter your email",
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: const Icon(Icons.email_outlined),
@@ -145,6 +147,7 @@ class _SignupPageState extends State<SignupPage> {
                   // Password field
                   AppTextField(
                     label: 'Password',
+                    hint: "Enter your password",
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -170,6 +173,7 @@ class _SignupPageState extends State<SignupPage> {
                   // Confirm password field
                   AppTextField(
                     label: 'Confirm Password',
+                    hint: "Confirm password",
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirmPassword,
                     prefixIcon: const Icon(Icons.lock_outline),

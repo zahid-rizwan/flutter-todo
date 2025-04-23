@@ -115,7 +115,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           return Scaffold(
             backgroundColor: AppColors.darkBackground,
             appBar: AppBar(
-              title: const Text('Task Details'),
+              title: const Text('Task Details',style: TextStyle(
+                color: Colors.white,
+              ),),
               backgroundColor: AppColors.darkBackground,
               elevation: 0,
             ),
@@ -131,12 +133,14 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           return Scaffold(
             backgroundColor: AppColors.darkBackground,
             appBar: AppBar(
-              title: const Text('Task Details'),
+              title: const Text('Task Details',style: TextStyle(
+                color: Colors.white,
+              ),),
               backgroundColor: AppColors.darkBackground,
               elevation: 0,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit,color: Colors.white,),
                   onPressed: () {
                     // Navigate to edit task page
                   },

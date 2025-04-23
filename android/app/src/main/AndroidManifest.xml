@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="to_do_app_demo_1"
+        android:label="Day Task"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

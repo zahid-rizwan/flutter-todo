@@ -90,6 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Email field
                   AppTextField(
                     label: 'Email Address',
+                    hint: "Enter your email",
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: const Icon(Icons.person_outline),
@@ -109,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Password field
                   AppTextField(
                     label: 'Password',
+                    hint: "Enter your password",
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     prefixIcon: const Icon(Icons.lock_outline),

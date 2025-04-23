@@ -119,7 +119,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     return Scaffold(
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
-        title: const Text('Add Task'),
+        title: const Text('Add Task',style: TextStyle(color: Colors.white),),
         backgroundColor: AppColors.darkBackground,
         elevation: 0,
       ),
@@ -141,6 +141,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 // Title field
                 AppTextField(
                   label: 'Task Title',
+                  hint: "Enter the task title",
                   controller: _titleController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -155,8 +156,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 // Description field
                 AppTextField(
                   label: 'Description',
+                  hint: "Enter description",
                   controller: _descriptionController,
                   maxLines: 5,
+
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a description';

@@ -16,6 +16,9 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
   final UpdateTask updateTask;
   final DeleteTask deleteTask;
 
+  // Collection to store tasks
+  final Map<String, Tasks> _tasksCollection = {};
+
   TaskDetailBloc({
     required this.getTaskDetails,
     required this.addTask,
@@ -32,6 +35,12 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
     emit(TaskDetailLoadingState());
 
     try {
+      // Check if we already have this task in our collection
+      if (_tasksCollection.containsKey(event.taskId)) {
+        emit(TaskDetailLoadedState(task: _tasksCollection[event.taskId]!));
+        return;
+      }
+
       // This would normally call the use case
       // For now, we'll simulate fetching task details
       await Future.delayed(const Duration(seconds: 1));
@@ -39,7 +48,7 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
       // Mock data based on task ID
       final task = Tasks(
         id: event.taskId,
-        title: event.taskId == '3' ? 'Mobile App Wireframe' :
+        title: event.taskId == '3' ? 'Mobile App ' :
         event.taskId == '4' ? 'Real Estate App Design' :
         'Dashboard & App Design',
         description: event.taskId == '3' ?
@@ -81,6 +90,9 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
         isCompleted: false,
       );
 
+      // Store the task in our collection
+      _tasksCollection[event.taskId] = task;
+
       emit(TaskDetailLoadedState(task: task));
     } catch (e) {
       emit(TaskDetailErrorState(message: e.toString()));
@@ -94,6 +106,9 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
       // This would normally call the use case
       // For now, we'll simulate adding a task
       await Future.delayed(const Duration(seconds: 1));
+
+      // Add the task to our collection
+      _tasksCollection[event.task.id] = event.task;
 
       emit(TaskDetailAddedState(task: event.task));
     } catch (e) {
@@ -109,6 +124,9 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
       // For now, we'll simulate updating a task
       await Future.delayed(const Duration(seconds: 1));
 
+      // Update the task in our collection
+      _tasksCollection[event.task.id] = event.task;
+
       emit(TaskDetailUpdatedState(task: event.task));
       emit(TaskDetailLoadedState(task: event.task));
     } catch (e) {
@@ -123,6 +141,9 @@ class TaskDetailBloc extends Bloc<TaskDetailEvent, TaskDetailState> {
       // This would normally call the use case
       // For now, we'll simulate deleting a task
       await Future.delayed(const Duration(seconds: 1));
+
+      // Remove the task from our collection
+      _tasksCollection.remove(event.taskId);
 
       emit(TaskDetailDeletedState(taskId: event.taskId));
     } catch (e) {

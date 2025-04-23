@@ -50,6 +50,8 @@ dependencies:
   internet_connection_checker: ^3.0.1
   gotrue: ^2.11.1
   flutter_dotenv: ^5.2.1
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +63,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/launcher_ic.png"
+  adaptive_icon_background: "#ffffff"  # For Android adaptive icons
+  adaptive_icon_foreground: "assets/icons/launcher_ic.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -104,3 +112,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/icons/splash_ic.png"
+  android_12:
+    image: assets/icons/splash_ic.png
+    color: "#ffffff"
