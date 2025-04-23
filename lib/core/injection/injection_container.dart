@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/datasources/auth_local_datasources.dart';
 import '../../features/auth/data/datasources/auth_remote_datasources.dart';
@@ -31,6 +32,7 @@ import '../../features/tasks/domian/usecases/update_task.dart';
 import '../../features/tasks/presentation/bloc/task_bloc.dart';
 import '../../features/tasks/presentation/bloc/task_details_bloc/task_detail_bloc.dart';
 import '../network/network_info.dart';
+import '../services/supabase_service.dart';
 
 
 final sl = GetIt.instance;
@@ -38,6 +40,9 @@ final sl = GetIt.instance;
 Future<void> init() async {
   //! Features - Auth
   // Bloc
+  final supabaseClient = SupabaseService().client;
+  sl.registerLazySingleton<SupabaseClient>(() => supabaseClient);
+
 
   sl.registerFactory(
         () => AuthBloc(
@@ -57,7 +62,7 @@ Future<void> init() async {
   // Repository
   sl.registerLazySingleton<AuthRepository>(
         () => AuthRepositoryImpl(
-      remoteDataSource: sl(),
+          supabaseClient: sl(),
       localDataSource: sl(),
       networkInfo: sl(),
     ),
@@ -65,7 +70,10 @@ Future<void> init() async {
 
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSourceImpl(),
+        () => AuthRemoteDataSourceImpl(
+            supabaseClient: sl()
+
+        ),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
         () => AuthLocalDataSourceImpl(sharedPreferences: sl()),

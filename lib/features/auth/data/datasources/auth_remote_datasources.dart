@@ -1,4 +1,4 @@
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -17,22 +17,35 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  // This would normally use Supabase client
-  // For now, we'll just implement the methods with mock data
+  final SupabaseClient supabaseClient;
+
+  AuthRemoteDataSourceImpl({required this.supabaseClient});
 
   @override
   Future<UserModel> login({
     required String email,
     required String password,
   }) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    final response = await supabaseClient.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    if (response.user == null) {
+      throw Exception('Login failed');
+    }
+
+    final userData = await supabaseClient
+        .from('profiles')
+        .select()
+        .eq('id', response.user!.id)
+        .single();
 
     return UserModel(
-      id: '1',
-      name: 'Fazil Laghari',
-      email: email,
-      avatarUrl: null,
+      id: response.user!.id,
+      name: userData['name'] ?? 'No Name',
+      email: response.user!.email ?? email,
+      avatarUrl: userData['avatar_url'],
     );
   }
 
@@ -42,11 +55,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    final response = await supabaseClient.auth.signUp(
+      email: email,
+      password: password,
+      data: {
+        'name': name,
+        'email': email,
+      },
+    );
+
+    if (response.user == null) {
+      throw Exception('Registration failed');
+    }
+
+    // Insert user profile data
+    await supabaseClient.from('profiles').insert({
+      'id': response.user!.id,
+      'name': name,
+      'email': email,
+    });
 
     return UserModel(
-      id: '1',
+      id: response.user!.id,
       name: name,
       email: email,
       avatarUrl: null,
@@ -55,9 +85,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout() async {
-    // Simulate API call
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    return;
+    await supabaseClient.auth.signOut();
   }
 }

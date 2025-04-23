@@ -1,10 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:to_do_app_demo_1/features/tasks/presentation/bloc/task_details_bloc/task_detail_bloc.dart';
 
 import 'core/injection/injection_container.dart' as di;
 import 'core/routes/app_router.dart';
+import 'core/services/supabase_service.dart';
 import 'core/themes/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
@@ -12,6 +14,8 @@ import 'features/tasks/presentation/bloc/task_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+  await SupabaseService().initialize();
   await di.init();
   runApp(const MyApp());
 }

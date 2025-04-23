@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:to_do_app_demo_1/core/utils/snackbar_utils.dart';
 
@@ -70,11 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 40),
 
                   // Logo
-                  Image.asset(
-                    'assets/images/logo.png',
-                    width: 80,
-                    height: 80,
-                  ),
+                  SvgPicture.asset("assets/icons/logo_ic.svg"),
 
                   const SizedBox(height: 24),
 
