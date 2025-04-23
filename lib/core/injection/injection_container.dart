@@ -116,7 +116,7 @@ Future<void> init() async {
 
   // Data sources
   sl.registerLazySingleton<TaskRemoteDataSource>(
-        () => TaskRemoteDataSourceImpl(),
+        () => TaskRemoteDataSourceImpl(supabaseClient: sl()),
   );
   sl.registerLazySingleton<TaskLocalDataSource>(
         () => TaskLocalDataSourceImpl(sharedPreferences: sl()),

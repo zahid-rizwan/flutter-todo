@@ -11,9 +11,16 @@ abstract class TaskLocalDataSource {
   Future<void> saveTask(TaskModel task);
   Future<void> saveTasks(List<TaskModel> tasks);
   Future<void> deleteTask(String taskId);
+  Future<List<TaskModel>> getCachedCompletedTasks();
+  Future<List<TaskModel>> getCachedOngoingTasks();
+  Future<void> cacheCompletedTasks(List<TaskModel> tasks);
+  Future<void> cacheOngoingTasks(List<TaskModel> tasks);
 }
 
 const CACHED_TASKS_KEY = 'CACHED_TASKS';
+const CACHED_COMPLETED_TASKS = 'CACHED_COMPLETED_TASKS';
+const CACHED_ONGOING_TASKS = 'CACHED_ONGOING_TASKS';
+
 
 class TaskLocalDataSourceImpl implements TaskLocalDataSource {
   final SharedPreferences sharedPreferences;
@@ -128,5 +135,44 @@ class TaskLocalDataSourceImpl implements TaskLocalDataSource {
         json.encode(tasks.map((t) => t.toJson()).toList()),
       );
     }
+  }
+  @override
+  Future<List<TaskModel>> getCachedCompletedTasks() async {
+    final jsonString = sharedPreferences.getString(CACHED_COMPLETED_TASKS);
+    if (jsonString != null) {
+      final List<dynamic> decodedJson = json.decode(jsonString);
+      return decodedJson.map((task) => TaskModel.fromJson(task)).toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<List<TaskModel>> getCachedOngoingTasks() async {
+    final jsonString = sharedPreferences.getString(CACHED_ONGOING_TASKS);
+    if (jsonString != null) {
+      final List<dynamic> decodedJson = json.decode(jsonString);
+      return decodedJson.map((task) => TaskModel.fromJson(task)).toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<void> cacheCompletedTasks(List<TaskModel> tasks) async {
+    final List<Map<String, dynamic>> tasksJson =
+    tasks.map((task) => task.toJson()).toList();
+    await sharedPreferences.setString(
+      CACHED_COMPLETED_TASKS,
+      json.encode(tasksJson),
+    );
+  }
+
+  @override
+  Future<void> cacheOngoingTasks(List<TaskModel> tasks) async {
+    final List<Map<String, dynamic>> tasksJson =
+    tasks.map((task) => task.toJson()).toList();
+    await sharedPreferences.setString(
+      CACHED_ONGOING_TASKS,
+      json.encode(tasksJson),
+    );
   }
 }
